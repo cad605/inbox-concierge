@@ -1,0 +1,32 @@
+# fly.toml app configuration file generated for inbox-concierge-backend on 2026-04-06T22:35:51-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'inbox-concierge-backend'
+primary_region = 'ewr'
+
+[build]
+
+[deploy]
+release_command = "bun run db:migrate"
+
+[http_service]
+internal_port = 3000
+force_https = true
+auto_stop_machines = 'stop'
+auto_start_machines = false
+min_machines_running = 1
+processes = ['app']
+
+[[http_service.checks]]
+grace_period = "10s"
+interval = "30s"
+method = "GET"
+timeout = "5s"
+path = "/health"
+
+[[vm]]
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1
