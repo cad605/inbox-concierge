@@ -1,0 +1,24 @@
+{
+  "name": "@workspace/http",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./schema": "./schema.d.ts",
+    "./client": "./client.ts",
+    "./openapi": "./openapi.json"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "openapi:types": "openapi-typescript openapi.json -o schema.d.ts"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "@workspace/tsconfig": "catalog:",
+    "openapi-typescript": "7.13.0",
+    "typescript": "catalog:"
+  }
+}
