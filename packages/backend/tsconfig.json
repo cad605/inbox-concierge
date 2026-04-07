@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "lib": ["ES2021", "dom", "ESNext.Array"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ],
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext"
+  },
+  "exclude": ["./src/_generated", "node_modules"],
+  "extends": "@workspace/tsconfig/server-app.json",
+  "include": ["**/*.ts", "**/*.mts"]
+}

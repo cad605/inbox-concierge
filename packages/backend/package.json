@@ -1,0 +1,32 @@
+{
+  "name": "@workspace/backend",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "scripts": {
+    "start": "bun run src/entrypoints/http/main.ts",
+    "dev": "bun --watch run src/entrypoints/http/main.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "openapi:export": "bun run scripts/export-openapi.ts",
+    "db:migrate": "bun run scripts/migrate.ts"
+  },
+  "dependencies": {
+    "@effect/ai-openrouter": "4.0.0-beta.43",
+    "@effect/platform-bun": "catalog:",
+    "@effect/sql-pg": "4.0.0-beta.43",
+    "effect": "catalog:",
+    "pg": "8.20.0"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "@types/bun": "catalog:",
+    "@types/pg": "8.20.0",
+    "@workspace/tsconfig": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
