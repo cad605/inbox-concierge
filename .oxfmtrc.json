@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    ".repos",
+    "node_modules",
+    "bun.lock",
+    "*.tsbuildinfo",
+    "**/routeTree.gen.ts",
+    "**/infrastructure/paraglide/**"
+  ],
+  "sortImports": {},
+  "sortPackageJson": {}
+}

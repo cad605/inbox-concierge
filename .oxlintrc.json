@@ -1,0 +1,378 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "oxc", "eslint", "unicorn", "node"],
+  "ignorePatterns": [
+    ".repos",
+    "node_modules",
+    "bun.lock",
+    "**/routeTree.gen.ts",
+    "**/_generated/**",
+    "**/dist/**",
+    "**/schema.d.ts",
+    "**/openapi.yaml",
+    "**/infrastructure/paraglide/**"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "typescript/consistent-type-imports": [
+      "error",
+      {
+        "fixStyle": "inline-type-imports"
+      }
+    ],
+    "typescript/no-import-type-side-effects": "error",
+    "import/no-duplicates": "error",
+    "import/no-self-import": "error",
+    "import/no-empty-named-blocks": "error",
+    "import/no-cycle": "error",
+
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-useless-empty-export": "error",
+
+    "eslint/no-console": "error",
+    "eslint/no-var": "error",
+    "eslint/no-useless-constructor": "error",
+    "unicorn/no-abusive-eslint-disable": "error",
+    "eslint/no-unneeded-ternary": "error",
+    "eslint/no-useless-concat": "error",
+    "oxc/misrefactored-assign-op": "error",
+
+    "unicorn/prefer-array-flat-map": "error",
+    "unicorn/no-accessor-recursion": "error",
+    "oxc/no-map-spread": "off",
+    "eslint/object-shorthand": "off",
+    "eslint/no-shadow": "off",
+    "eslint/no-unused-vars": "off",
+    "eslint/require-yield": "off",
+    "eslint/no-fallthrough": "off",
+    "eslint/no-await-in-loop": "off",
+    "unicorn/no-new-array": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-array-reverse": "off",
+    "unicorn/require-post-message-target-origin": "off",
+    "unicorn/prefer-add-event-listener": "off",
+    "unicorn/prefer-set-has": "off",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-empty-interface": "off",
+    "typescript/ban-ts-comment": "off",
+    "typescript/no-namespace": "off",
+    "typescript/no-non-null-assertion": "off",
+    "typescript/no-dynamic-delete": "off",
+    "typescript/no-invalid-void-type": "off",
+    "typescript/no-unsafe-function-type": "off",
+    "typescript/unified-signatures": "off",
+    "typescript/no-empty-object-type": "off",
+    "typescript/no-confusing-non-null-assertion": "off",
+    "typescript/array-type": [
+      "error",
+      {
+        "default": "generic",
+        "readonly": "generic"
+      }
+    ],
+    "typescript/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["packages/backend/src/domain/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": ["#*/**", "!#lib/**", "!#domain/**"],
+                "message": "Domain layer must be pure - can only import from #lib/ or external libraries"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/backend/src/ports/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": ["#*/**", "!#domain/**", "!#ports/**", "!#lib/**"],
+                "message": "Ports can only import from #domain/, #lib/, or external libraries"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/backend/src/use-cases/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": ["#*/**", "!#ports/**", "!#domain/**", "!#use-cases/**", "!#lib/**"],
+                "message": "Use cases can only import from #ports/, #domain/, #lib/ - never from adapters, infrastructure, or entrypoints"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/backend/src/adapters/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": [
+                  "#*/**",
+                  "!#ports/**",
+                  "!#domain/**",
+                  "!#adapters/**",
+                  "!#infrastructure/**",
+                  "!#lib/**"
+                ],
+                "message": "Adapters can only import from #ports/, #domain/, #infrastructure/, #lib/"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/backend/src/infrastructure/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": ["#*/**", "!#infrastructure/**", "!#drizzle/**", "!#lib/**"],
+                "message": "Infrastructure cannot import from domain, ports, adapters, use-cases, or entrypoints"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/web/src/lib/**", "packages/web/src/features/**/lib/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": ["#*/**", "!#lib/**", "!#features/**/lib/**"],
+                "message": "lib/ must be pure utilities - can only import from #lib/ or external libraries"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/web/src/domain/**", "packages/web/src/features/**/domain/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": [
+                  "#*/**",
+                  "!#lib/**",
+                  "!#features/**/lib/**",
+                  "!#domain/**",
+                  "!#features/**/domain/**"
+                ],
+                "message": "Domain layer must be pure - can only import from #lib/ or external libraries"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/web/src/ports/**", "packages/web/src/features/**/ports/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": [
+                  "#*/**",
+                  "!#domain/**",
+                  "!#features/**/domain/**",
+                  "!#ports/**",
+                  "!#features/**/ports/**",
+                  "!#lib/**",
+                  "!#features/**/lib/**"
+                ],
+                "message": "Ports can only import from #domain/, #lib/, or external libraries"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/web/src/infrastructure/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": ["#*/**", "!#infrastructure/**", "!#lib/**"],
+                "message": "Infrastructure cannot import from domain, ports, adapters, features, or routes"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/web/src/ui/**", "packages/web/src/features/**/ui/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": ["#*/**", "!#ui/**", "!#lib/**", "!#domain/**"],
+                "message": "UI components must be purely presentational - can only import from #ui/, #lib/, #domain/, $paraglide, or external libraries"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/web/src/adapters/**", "packages/web/src/features/**/adapters/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": [
+                  "#*/**",
+                  "!#ports/**",
+                  "!#features/**/ports/**",
+                  "!#domain/**",
+                  "!#features/**/domain/**",
+                  "!#adapters/**",
+                  "!#features/**/adapters/**",
+                  "!#infrastructure/**",
+                  "!#lib/**",
+                  "!#features/**/lib/**"
+                ],
+                "message": "Adapters can only import from #ports/, #domain/, #infrastructure/, #lib/"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/web/src/features/**/hooks/**"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["./*", "./**", "../*", "../**"],
+                "message": "Use # path alias instead of relative imports"
+              },
+              {
+                "group": [
+                  "#*/**",
+                  "!#ports/**",
+                  "!#features/**/ports/**",
+                  "!#domain/**",
+                  "!#features/**/domain/**",
+                  "!#adapters/**",
+                  "!#features/**/adapters/**",
+                  "!#infrastructure/**",
+                  "!#lib/**",
+                  "!#features/**/lib/**"
+                ],
+                "message": "Hooks can only import from #ports/, #domain/, #adapters/, #infrastructure/, #lib/, or external libraries"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/__tests__/**", "**/*.test.*", "**/*.spec.*"],
+      "rules": {
+        "eslint/no-restricted-imports": "off"
+      }
+    }
+  ]
+}

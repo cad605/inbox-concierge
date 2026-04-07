@@ -1,0 +1,8 @@
+{
+  "name": "@workspace/tsconfig",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@total-typescript/tsconfig": "1.0.4"
+  }
+}

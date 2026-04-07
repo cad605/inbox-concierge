@@ -1,0 +1,11 @@
+.git
+.github
+.cursor
+.repos
+**/node_modules
+**/.turbo
+**/dist
+.DS_Store
+*.log
+.env
+.env.*

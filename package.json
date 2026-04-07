@@ -1,0 +1,63 @@
+{
+  "name": "inbox-concierge",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/**"
+    ],
+    "catalog": {
+      "@effect/vitest": "4.0.0-beta.43",
+      "effect": "4.0.0-beta.43",
+      "@effect/language-service": "0.80.0",
+      "@effect/platform-bun": "04.0.0-beta.43",
+      "@types/bun": "1.3.11",
+      "@workspace/tsconfig": "workspace:*",
+      "typescript": "5.9.3",
+      "vitest": "4.1.1"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf bun.lock node_modules packages/*/node_modules",
+    "format:check": "oxfmt --check",
+    "format:fix": "oxfmt .",
+    "lint:check": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "typecheck": "bun --filter '*' typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "quality:check": "bun --filter '*' typecheck && oxlint . && oxfmt --check",
+    "quality:fix": "oxlint --fix . && oxfmt .",
+    "build": "bun --filter '*' build",
+    "// API Sync": "Generate OpenAPI spec and types",
+    "api:sync": "bun --filter @workspace/backend openapi:export && bun --filter @workspace/http openapi:types",
+    "// Backend": "Direct workspace commands",
+    "backend:start": "bun --filter @workspace/backend start",
+    "backend:dev": "bun --filter @workspace/backend dev",
+    "backend:test": "bun --filter @workspace/backend test",
+    "backend:test:watch": "bun --filter @workspace/backend test:watch",
+    "backend:typecheck": "bun --filter @workspace/backend typecheck",
+    "backend:openapi:export": "bun --filter @workspace/backend openapi:export",
+    "backend:db:migrate": "bun --filter @workspace/backend db:migrate",
+    "// Web": "Direct workspace commands",
+    "web:dev": "bun --filter @workspace/web dev",
+    "web:build": "bun --filter @workspace/web build",
+    "web:serve": "bun --filter @workspace/web serve",
+    "web:typecheck": "bun --filter @workspace/web typecheck",
+    "web:component:add": "bun --filter @workspace/web component:add",
+    "// HTTP": "Direct workspace commands",
+    "http:typecheck": "bun --filter @workspace/http typecheck",
+    "http:openapi:types": "bun --filter @workspace/http openapi:types"
+  },
+  "devDependencies": {
+    "oxfmt": "0.41.0",
+    "oxlint": "1.56.0",
+    "rimraf": "6.1.3",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "bun": "1.3.10"
+  },
+  "packageManager": "bun@1.3.10"
+}
