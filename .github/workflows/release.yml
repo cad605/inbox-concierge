@@ -1,0 +1,20 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality:
+    uses: ./.github/workflows/.quality.yml
+    secrets: inherit
+
+  test:
+    uses: ./.github/workflows/.test.yml
+    secrets: inherit
+
+  deploy:
+    needs: quality
+    uses: ./.github/workflows/.deploy.yml
+    secrets: inherit

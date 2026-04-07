@@ -1,0 +1,21 @@
+name: Quality
+
+on:
+  workflow_call:
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run Quality
+        run: bun run quality:check
