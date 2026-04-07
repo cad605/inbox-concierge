@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "$paraglide/*": ["./src/infrastructure/paraglide/*"]
+    }
+  },
+  "exclude": ["node_modules"],
+  "extends": "@workspace/tsconfig/client-app.json",
+  "include": ["**/*.ts", "**/*.tsx"]
+}
