@@ -2,10 +2,11 @@ import { Box, Flex } from "@chakra-ui/react";
 import { Outlet } from "@tanstack/react-router";
 
 import { AppSidebar } from "#features/shell/app-sidebar.tsx";
-import { useAuthUser } from "#infrastructure/hooks/use-auth.ts";
+import { useShell } from "#features/shell/context.tsx";
 
 export function AuthenticatedShell() {
-  const user = useAuthUser();
+  const { useShellUser } = useShell();
+  const user = useShellUser();
 
   if (!user) {
     return null;

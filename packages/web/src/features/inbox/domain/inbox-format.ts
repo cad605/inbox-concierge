@@ -1,4 +1,4 @@
-import type { InboxThread } from "#infrastructure/collections/threads.ts";
+import type { InboxThreadParticipant } from "#features/inbox/domain/types.ts";
 
 export function formatThreadTime(iso: string): string {
   const d = new Date(iso);
@@ -11,9 +11,7 @@ export function formatThreadTime(iso: string): string {
   }).format(d);
 }
 
-export function formatFrom(
-  participants: ReadonlyArray<InboxThread["participants"][number]>,
-): string {
+export function formatFrom(participants: ReadonlyArray<InboxThreadParticipant>): string {
   if (participants.length === 0) {
     return "—";
   }

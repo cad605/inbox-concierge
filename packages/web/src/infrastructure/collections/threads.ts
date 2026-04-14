@@ -1,6 +1,6 @@
-import type { LoadSubsetOptions } from "@tanstack/db";
 import type { QueryFunctionContext } from "@tanstack/query-core";
 import { parseLoadSubsetOptions, queryCollectionOptions } from "@tanstack/query-db-collection";
+import type { LoadSubsetOptions } from "@tanstack/react-db";
 import { BasicIndex, createCollection } from "@tanstack/react-db";
 import type { components } from "@workspace/http/schema";
 import { Schema } from "effect";

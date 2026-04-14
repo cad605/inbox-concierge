@@ -9,6 +9,7 @@
   "labels_retry": "Retry",
   "nav_inbox": "Inbox",
   "nav_pending_jobs_indicator": "Background sync in progress",
+  "pending_jobs_error": "Could not load background job status.",
   "nav_settings": "Settings",
   "nav_sign_out": "Sign out",
   "settings_title": "Settings",

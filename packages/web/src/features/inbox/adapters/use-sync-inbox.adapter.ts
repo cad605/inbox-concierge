@@ -1,26 +1,33 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { UseSyncInboxResult } from "#features/inbox/ports/inbox.port.ts";
 import { api } from "#infrastructure/api-client.ts";
 import { getErrorMessage } from "#infrastructure/api-errors.ts";
 import { authKeys, threadKeys } from "#infrastructure/query-keys.ts";
-import { toaster } from "#ui/toaster.tsx";
 
-export function useSyncInbox() {
+export function useSyncInbox(): UseSyncInboxResult {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const { mutate, isPending, isError, error, reset } = useMutation({
     mutationFn: async () => {
-      const { error, response } = await api.POST("/api/threads/sync");
+      const { error: apiError, response } = await api.POST("/api/threads/sync");
       if (!response.ok) {
-        throw new Error(getErrorMessage(error));
+        throw new Error(getErrorMessage(apiError));
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: threadKeys.all });
       queryClient.invalidateQueries({ queryKey: authKeys.pendingJobs });
     },
-    onError: (err: unknown) => {
-      toaster.create({ title: getErrorMessage(err), type: "error" });
-    },
   });
+
+  return {
+    mutate: () => {
+      mutate();
+    },
+    isPending,
+    isError,
+    error: error instanceof Error ? error : error != null ? new Error(String(error)) : null,
+    reset,
+  };
 }

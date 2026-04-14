@@ -1,10 +1,10 @@
 import { m } from "$paraglide/messages.js";
 import { DataList, Heading, Stack, Text, useLocaleContext } from "@chakra-ui/react";
+import type { components } from "@workspace/http/schema";
 
-import type { AuthUser } from "#infrastructure/hooks/use-auth.ts";
-import { useAuthUser } from "#infrastructure/hooks/use-auth.ts";
+type SettingsUser = components["schemas"]["AuthUser"];
 
-function primaryProviderLabel(provider: AuthUser["primaryProvider"]): string {
+function primaryProviderLabel(provider: SettingsUser["primaryProvider"]): string {
   switch (provider) {
     case "google":
       return m.settings_profile_provider_google();
@@ -14,9 +14,12 @@ function primaryProviderLabel(provider: AuthUser["primaryProvider"]): string {
   }
 }
 
-export function ProfileSection() {
+export type ProfileSectionProps = {
+  readonly user: SettingsUser | null;
+};
+
+export function ProfileSection({ user }: ProfileSectionProps) {
   const { locale } = useLocaleContext();
-  const user = useAuthUser();
 
   const formatDateTime = (iso: string): string => {
     const d = new Date(iso);

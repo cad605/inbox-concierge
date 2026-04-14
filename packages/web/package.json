@@ -21,7 +21,6 @@
     "@chakra-ui/react": "3.34.0",
     "@emotion/react": "11.14.0",
     "@inlang/paraglide-js": "2.15.1",
-    "@tanstack/db": "0.6.2",
     "@tanstack/query-core": "5.96.2",
     "@tanstack/query-db-collection": "1.0.33",
     "@tanstack/react-db": "0.1.80",

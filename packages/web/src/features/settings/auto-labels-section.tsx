@@ -1,15 +1,15 @@
 import { m } from "$paraglide/messages.js";
 import { Alert, Button, Flex, Heading, Skeleton, Stack, Table, Text } from "@chakra-ui/react";
-import { useLiveQuery } from "@tanstack/react-db";
+import { Suspense, useCallback } from "react";
 import { LuTag } from "react-icons/lu";
 
 import { AddLabelDialog } from "#features/settings/add-label-dialog.tsx";
-import { AutoLabelRow } from "#features/settings/auto-label-row.tsx";
+import { useSettings } from "#features/settings/context.tsx";
+import type { SettingsLabel, SettingsUser } from "#features/settings/domain/types.ts";
+import { AutoLabelRow } from "#features/settings/ui/auto-label-row.tsx";
 import { getErrorMessage } from "#infrastructure/api-errors.ts";
-import type { Label } from "#infrastructure/collections/labels.ts";
-import { labelCollection } from "#infrastructure/collections/labels.ts";
-import { useAuthUser } from "#infrastructure/hooks/use-auth.ts";
 import { EmptyState } from "#ui/empty-state.tsx";
+import { ErrorBoundary } from "#ui/error-boundary.tsx";
 import { toaster } from "#ui/toaster.tsx";
 
 const AUTO_LABELS_SKELETON_ROWS = 5;
@@ -56,73 +56,80 @@ function AutoLabelsTableSkeleton() {
   );
 }
 
-export function AutoLabelsSection() {
-  const user = useAuthUser();
-  const {
-    data: labelRows,
-    isLoading,
-    status,
-  } = useLiveQuery((q) => q.from({ label: labelCollection }));
-
-  const labels = labelRows ?? [];
-  const totalCount = labels.length;
-
-  const handleToggle = (label: Label, checked: boolean) => {
-    const tx = labelCollection.update(label.id, (draft) => {
-      draft.isActive = checked;
-    });
-    tx.isPersisted.promise.catch((error: unknown) => {
-      toaster.create({ title: getErrorMessage(error), type: "error" });
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <Stack gap={6}>
-        <Flex align="flex-start" flexWrap="wrap" gap={3} justify="space-between">
-          <Stack gap={1} maxW="2xl">
-            <Skeleton height="7" maxW="xs" />
-            <Skeleton height="4" maxW="lg" />
-          </Stack>
-
-          <AddLabelDialog user={user} />
-        </Flex>
-
-        <AutoLabelsTableSkeleton />
+function AutoLabelsSectionHeaderSkeleton() {
+  return (
+    <Flex align="flex-start" flexWrap="wrap" gap={3} justify="space-between">
+      <Stack gap={1} maxW="2xl">
+        <Skeleton height="7" maxW="xs" />
+        <Skeleton height="4" maxW="lg" />
       </Stack>
-    );
-  }
+      <Skeleton height="9" maxW="28" rounded="md" />
+    </Flex>
+  );
+}
 
-  if (status === "error") {
-    return (
-      <Stack gap={6}>
-        <Flex align="flex-start" flexWrap="wrap" gap={3} justify="space-between">
-          <Stack gap={1} maxW="2xl">
-            <Heading size="md">{m.settings_auto_labels_title()}</Heading>
-            <Text color="fg.muted" fontSize="sm">
-              {m.settings_auto_labels_description()}
-            </Text>
-          </Stack>
+function AutoLabelsLoadingFallback() {
+  return (
+    <Stack gap={6}>
+      <AutoLabelsSectionHeaderSkeleton />
+      <AutoLabelsTableSkeleton />
+    </Stack>
+  );
+}
 
-          <AddLabelDialog user={user} />
-        </Flex>
-        <Stack gap={3} maxW="lg">
-          <Alert.Root status="error">
-            <Alert.Description>{m.labels_error()}</Alert.Description>
-          </Alert.Root>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              labelCollection.utils.refetch();
-            }}
-          >
-            {m.labels_retry()}
-          </Button>
+function AutoLabelsErrorFallback(props: {
+  readonly reset: () => void;
+  readonly user: SettingsUser | null;
+}) {
+  const { reset, user } = props;
+  const { useRefetchSettingsLabels } = useSettings();
+  const refetchLabels = useRefetchSettingsLabels();
+  return (
+    <Stack gap={6}>
+      <Flex align="flex-start" flexWrap="wrap" gap={3} justify="space-between">
+        <Stack gap={1} maxW="2xl">
+          <Heading size="md">{m.settings_auto_labels_title()}</Heading>
+          <Text color="fg.muted" fontSize="sm">
+            {m.settings_auto_labels_description()}
+          </Text>
         </Stack>
+
+        <AddLabelDialog user={user} />
+      </Flex>
+      <Stack gap={3} maxW="lg">
+        <Alert.Root status="error">
+          <Alert.Description>{m.labels_error()}</Alert.Description>
+        </Alert.Root>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            refetchLabels();
+            reset();
+          }}
+        >
+          {m.labels_retry()}
+        </Button>
       </Stack>
-    );
-  }
+    </Stack>
+  );
+}
+
+function AutoLabelsSectionContent(props: { readonly user: SettingsUser | null }) {
+  const { user } = props;
+  const { useSettingsLabelsRows, useToggleSettingsLabelActive } = useSettings();
+  const labels = useSettingsLabelsRows();
+  const toggleLabel = useToggleSettingsLabelActive();
+  const handleToggle = useCallback(
+    (label: SettingsLabel, checked: boolean) => {
+      void toggleLabel(label, checked).catch((error: unknown) => {
+        toaster.create({ title: getErrorMessage(error), type: "error" });
+      });
+    },
+    [toggleLabel],
+  );
+
+  const totalCount = labels.length;
 
   return (
     <Stack gap={6}>
@@ -169,5 +176,21 @@ export function AutoLabelsSection() {
         </Table.ScrollArea>
       )}
     </Stack>
+  );
+}
+
+export type AutoLabelsSectionProps = {
+  readonly user: SettingsUser | null;
+};
+
+export function AutoLabelsSection({ user }: AutoLabelsSectionProps) {
+  return (
+    <ErrorBoundary
+      fallbackRender={({ reset }) => <AutoLabelsErrorFallback reset={reset} user={user} />}
+    >
+      <Suspense fallback={<AutoLabelsLoadingFallback />}>
+        <AutoLabelsSectionContent user={user} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

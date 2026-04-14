@@ -1,28 +1,19 @@
 import { Box, Stack } from "@chakra-ui/react";
-import { useLiveQuery } from "@tanstack/react-db";
+import { Suspense } from "react";
 
-import { useSyncInbox } from "#features/inbox/use-sync-inbox.ts";
-import { SidebarNav } from "#features/shell/sidebar-nav.tsx";
-import { SidebarUser } from "#features/shell/sidebar-user.tsx";
-import { pendingJobsCollection } from "#infrastructure/collections/pending-jobs.ts";
-import type { AuthUser } from "#infrastructure/hooks/use-auth.ts";
-import { useInvalidateThreadsWhenPendingJobsCountsChange } from "#infrastructure/hooks/use-invalidate-threads-when-pending-jobs-change.ts";
+import type { ShellUser } from "#features/shell/domain/types.ts";
+import {
+  SidebarPendingJobsErrorFallback,
+  SidebarPendingSync,
+  SidebarPendingSyncFallback,
+} from "#features/shell/sidebar-pending-sync.tsx";
+import { ErrorBoundary } from "#ui/error-boundary.tsx";
 
 type AppSidebarProps = {
-  user: AuthUser;
+  user: ShellUser;
 };
 
 export function AppSidebar({ user }: AppSidebarProps) {
-  const { mutate: syncInbox, isPending: isSyncing } = useSyncInbox();
-  const { data: pendingRows } = useLiveQuery((q) => q.from({ pending: pendingJobsCollection }));
-  const pending = pendingRows?.[0];
-  useInvalidateThreadsWhenPendingJobsCountsChange(
-    pending?.userInboxSyncCount,
-    pending?.messageAutoLabelCount,
-  );
-  const hasPendingBackgroundJobs =
-    pending !== undefined && (pending.userInboxSyncCount > 0 || pending.messageAutoLabelCount > 0);
-
   return (
     <Box
       as="aside"
@@ -33,12 +24,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
       width={{ base: "full", md: "260px" }}
     >
       <Stack gap={6}>
-        <SidebarUser displayName={user.displayName} email={user.email} />
-        <SidebarNav
-          hasPendingBackgroundJobs={hasPendingBackgroundJobs}
-          isSyncing={isSyncing}
-          onSyncInbox={() => syncInbox()}
-        />
+        <ErrorBoundary
+          fallbackRender={({ reset }) => <SidebarPendingJobsErrorFallback reset={reset} />}
+        >
+          <Suspense fallback={<SidebarPendingSyncFallback />}>
+            <SidebarPendingSync user={user} />
+          </Suspense>
+        </ErrorBoundary>
       </Stack>
     </Box>
   );

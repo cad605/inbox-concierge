@@ -1,12 +1,14 @@
 import { m } from "$paraglide/messages.js";
 import { Flex, Switch, Table, Text } from "@chakra-ui/react";
+import type { components } from "@workspace/http/schema";
 
-import { labelSubline } from "#features/settings/auto-labels-helpers.ts";
-import type { Label } from "#infrastructure/collections/labels.ts";
+import { labelSubline } from "#lib/settings-auto-label-helpers.ts";
+
+export type SettingsLabelRow = components["schemas"]["Label"];
 
 export interface AutoLabelRowProps {
-  readonly label: Label;
-  readonly onToggle: (label: Label, checked: boolean) => void;
+  readonly label: SettingsLabelRow;
+  readonly onToggle: (label: SettingsLabelRow, checked: boolean) => void;
 }
 
 export function AutoLabelRow(props: AutoLabelRowProps) {

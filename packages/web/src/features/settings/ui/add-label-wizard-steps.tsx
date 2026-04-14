@@ -3,13 +3,10 @@ import { Input, Stack, Textarea } from "@chakra-ui/react";
 import type { ComponentType, ReactNode, RefObject } from "react";
 
 import {
-  type ExampleSelection,
-  isAddLabelNameValid,
-} from "#features/settings/add-label-dialog-schema.ts";
-import {
   AddLabelExamplesFields,
   type AddLabelExampleThreadRow,
-} from "#features/settings/add-label-examples-fields.tsx";
+} from "#features/settings/ui/add-label-examples-fields.tsx";
+import { type ExampleSelection, isAddLabelNameValid } from "#lib/add-label-dialog-schema.ts";
 
 /** Minimal field API used by step 0; matches `useAppForm` + `InputField` composition. */
 export type AddLabelWizardTextField = {
@@ -40,7 +37,6 @@ export type AddLabelWizardRenderContext = {
   readonly nameInputRef: RefObject<HTMLInputElement | null>;
   readonly exampleByThreadId: Readonly<Record<string, ExampleSelection>>;
   readonly threads: ReadonlyArray<AddLabelExampleThreadRow>;
-  readonly threadsLoading: boolean;
   /** When false, examples list is not mounted (inactive step panels are `hidden` and break virtualization). */
   readonly examplesStepActive: boolean;
   readonly setThreadChecked: (
@@ -59,15 +55,8 @@ export type AddLabelWizardStep = {
 export function buildAddLabelWizardSteps(
   ctx: AddLabelWizardRenderContext,
 ): ReadonlyArray<AddLabelWizardStep> {
-  const {
-    form,
-    nameInputRef,
-    exampleByThreadId,
-    threads,
-    threadsLoading,
-    examplesStepActive,
-    setThreadChecked,
-  } = ctx;
+  const { form, nameInputRef, exampleByThreadId, threads, examplesStepActive, setThreadChecked } =
+    ctx;
 
   return [
     {
@@ -119,7 +108,6 @@ export function buildAddLabelWizardSteps(
             exampleByThreadId={exampleByThreadId}
             setThreadChecked={setThreadChecked}
             threads={threads}
-            threadsLoading={threadsLoading}
           />
         ) : null,
     },

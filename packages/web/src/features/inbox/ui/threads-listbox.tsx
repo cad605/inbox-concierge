@@ -11,24 +11,13 @@ import {
   createListCollection,
   visuallyHiddenStyle,
 } from "@chakra-ui/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { formatFrom, formatThreadTime } from "#features/inbox/inbox-format.ts";
-import type { InboxThread } from "#infrastructure/collections/threads.ts";
-import { useListboxVirtualizer } from "#lib/use-listbox-virtualizer.ts";
-import { useScrollRootLoadMore } from "#lib/use-scroll-root-load-more.ts";
+import { formatFrom, formatThreadTime } from "#features/inbox/domain/inbox-format.ts";
+import type { InboxThreadTableRow } from "#features/inbox/domain/types.ts";
+import { type ListboxVisibleRange, useListboxVirtualizer } from "#lib/use-listbox-virtualizer.ts";
 
-/** Row shape from thread collection live queries (readonly-safe). */
-export type InboxThreadTableRow = {
-  readonly id: string;
-  readonly subject: string;
-  readonly snippet: string;
-  readonly lastMessageAt: string;
-  readonly messageCount: number;
-  readonly isUnread: boolean;
-  readonly participants: ReadonlyArray<InboxThread["participants"][number]>;
-  readonly labels: ReadonlyArray<InboxThread["labels"][number]>;
-};
+export type { InboxThreadTableRow } from "#features/inbox/domain/types.ts";
 
 type ThreadCollectionItem = {
   value: string;
@@ -37,8 +26,8 @@ type ThreadCollectionItem = {
   lastMessageAt: string;
   messageCount: number;
   isUnread: boolean;
-  participants: ReadonlyArray<InboxThread["participants"][number]>;
-  labels: ReadonlyArray<InboxThread["labels"][number]>;
+  participants: InboxThreadTableRow["participants"];
+  labels: InboxThreadTableRow["labels"];
 };
 
 export type ThreadsListboxProps = {
@@ -55,14 +44,33 @@ export function ThreadsListbox({
   isFetchingNextPage,
 }: ThreadsListboxProps) {
   const [value, setValue] = useState<Array<string>>([]);
-  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
 
   const count = threads.length;
+
+  const loadMoreGuardsRef = useRef({
+    count,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
+  loadMoreGuardsRef.current = { count, hasNextPage, isFetchingNextPage, fetchNextPage };
+
+  const handleRangeChange = useCallback((range: ListboxVisibleRange) => {
+    const g = loadMoreGuardsRef.current;
+    if (!g.hasNextPage || g.isFetchingNextPage || g.count === 0) {
+      return;
+    }
+    const triggerIndex = g.count > 5 ? g.count - 5 : g.count - 1;
+    if (range.endIndex >= triggerIndex) {
+      g.fetchNextPage();
+    }
+  }, []);
 
   const virtual = useListboxVirtualizer({
     count,
     estimateSize: () => 70,
     overscan: 8,
+    onRangeChange: handleRangeChange,
   });
 
   const { virtualizer, virtualItems } = virtual;
@@ -88,15 +96,6 @@ export function ThreadsListbox({
     const ids = new Set(threads.map((t) => t.id));
     setValue((v) => v.filter((id) => ids.has(id)));
   }, [threads]);
-
-  useScrollRootLoadMore({
-    scrollRef: virtual.scrollRef,
-    sentinelRef: loadMoreSentinelRef,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    loadedCount: count,
-  });
 
   return (
     <Box display="flex" flex={1} flexDirection="column" height="100%" minH={0} overflow="hidden">
@@ -245,7 +244,6 @@ export function ThreadsListbox({
               );
             })}
           </div>
-          <Box ref={loadMoreSentinelRef} aria-hidden flexShrink={0} height="1px" width="full" />
           {isFetchingNextPage ? (
             <Flex justify="center" paddingBottom={2} paddingTop={2}>
               <Spinner size="sm" />

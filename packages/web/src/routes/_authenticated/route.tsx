@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
+import { InboxProvider } from "#features/inbox/context.tsx";
 import { AuthenticatedShell } from "#features/shell/authenticated-shell.tsx";
+import { ShellProvider } from "#features/shell/context.tsx";
 import { pendingJobsCollection } from "#infrastructure/collections/pending-jobs.ts";
 import { authMeQueryOptions } from "#infrastructure/queries/me-query.ts";
 
@@ -25,5 +27,11 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
-  return <AuthenticatedShell />;
+  return (
+    <InboxProvider>
+      <ShellProvider>
+        <AuthenticatedShell />
+      </ShellProvider>
+    </InboxProvider>
+  );
 }

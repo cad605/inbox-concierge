@@ -3,9 +3,15 @@ import {
   measureElement as defaultMeasureElement,
   useVirtualizer,
   type VirtualItem,
+  type Virtualizer,
 } from "@tanstack/react-virtual";
 import type { ComponentProps } from "react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+
+export type ListboxVisibleRange = {
+  readonly startIndex: number;
+  readonly endIndex: number;
+};
 
 export type ScrollToIndexDetails = {
   index: number;
@@ -17,6 +23,8 @@ type UseListboxVirtualizerOptions = {
   readonly count: number;
   readonly estimateSize?: (index: number) => number;
   readonly overscan?: number;
+  /** Fired when the virtualizer’s visible index range changes (scroll, resize, count). */
+  readonly onRangeChange?: (range: ListboxVisibleRange) => void;
 };
 
 /**
@@ -27,9 +35,24 @@ export function useListboxVirtualizer({
   count,
   estimateSize = () => 88,
   overscan = 8,
+  onRangeChange,
 }: UseListboxVirtualizerOptions) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onRangeChangeRef = useRef(onRangeChange);
+  onRangeChangeRef.current = onRangeChange;
+
+  const handleVirtualizerChange = useCallback((instance: Virtualizer<HTMLDivElement, Element>) => {
+    const cb = onRangeChangeRef.current;
+    if (cb === undefined) {
+      return;
+    }
+    const range = instance.range;
+    if (range === null) {
+      return;
+    }
+    cb({ startIndex: range.startIndex, endIndex: range.endIndex });
+  }, []);
 
   const virtualizer = useVirtualizer({
     count,
@@ -37,6 +60,7 @@ export function useListboxVirtualizer({
     getScrollElement: () => scrollRef.current,
     measureElement: defaultMeasureElement,
     overscan,
+    onChange: handleVirtualizerChange,
   });
 
   const virtualizerRef = useLiveRef(virtualizer);

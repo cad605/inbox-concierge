@@ -3,7 +3,6 @@ import {
   Box,
   Checkmark,
   Listbox,
-  Skeleton,
   Stack,
   Text,
   createListCollection,
@@ -12,20 +11,15 @@ import {
 } from "@chakra-ui/react";
 import { useMemo } from "react";
 
+import type { SettingsLabelWizardThreadRow } from "#features/settings/domain/types.ts";
 import {
   MAX_LABEL_EXAMPLES_PER_LABEL,
   type ExampleSelection,
-} from "#features/settings/add-label-dialog-schema.ts";
+} from "#lib/add-label-dialog-schema.ts";
 import { useListboxVirtualizer } from "#lib/use-listbox-virtualizer.ts";
 
 /** Rows only need fields used by this step; accepts TanStack DB readonly rows. */
-export type AddLabelExampleThreadRow = {
-  readonly id: string;
-  /** Present for synced threads; may be missing briefly from client collection rows. */
-  readonly lastMessageId: string | undefined;
-  readonly subject: string;
-  readonly snippet: string;
-};
+export type AddLabelExampleThreadRow = SettingsLabelWizardThreadRow;
 
 type ExampleThreadCollectionItem = {
   value: string;
@@ -42,14 +36,13 @@ const ListboxItemCheckmark = () => {
 
 export function AddLabelExamplesFields(props: {
   readonly threads: ReadonlyArray<AddLabelExampleThreadRow>;
-  readonly threadsLoading: boolean;
   readonly exampleByThreadId: Readonly<Record<string, ExampleSelection>>;
   readonly setThreadChecked: (
     thread: Pick<AddLabelExampleThreadRow, "id" | "lastMessageId">,
     checked: boolean,
   ) => void;
 }) {
-  const { threads, threadsLoading, exampleByThreadId, setThreadChecked } = props;
+  const { threads, exampleByThreadId, setThreadChecked } = props;
 
   const count = threads.length;
 
@@ -96,13 +89,7 @@ export function AddLabelExamplesFields(props: {
           {m.settings_auto_labels_examples_description()}
         </Text>
       </Stack>
-      {threadsLoading ? (
-        <Stack gap={2}>
-          <Skeleton height="10" />
-          <Skeleton height="10" />
-          <Skeleton height="10" />
-        </Stack>
-      ) : threads.length === 0 ? (
+      {threads.length === 0 ? (
         <Text color="fg.muted" fontSize="sm">
           {m.settings_auto_labels_examples_empty()}
         </Text>

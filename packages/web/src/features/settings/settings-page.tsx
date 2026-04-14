@@ -2,9 +2,13 @@ import { m } from "$paraglide/messages.js";
 import { Box, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 
 import { AutoLabelsSection } from "#features/settings/auto-labels-section.tsx";
-import { ProfileSection } from "#features/settings/profile-section.tsx";
+import { useSettings } from "#features/settings/context.tsx";
+import { ProfileSection } from "#features/settings/ui/profile-section.tsx";
 
 export function SettingsPage() {
+  const { useSettingsUser } = useSettings();
+  const user = useSettingsUser();
+
   return (
     <Flex flex={1} flexDirection="column" height="full" minH={0}>
       <Box flex={1} minH={0} overflowY="auto">
@@ -14,8 +18,8 @@ export function SettingsPage() {
             <Text color="fg.muted">{m.settings_description()}</Text>
           </Stack>
 
-          <ProfileSection />
-          <AutoLabelsSection />
+          <ProfileSection user={user} />
+          <AutoLabelsSection user={user} />
         </Stack>
       </Box>
     </Flex>

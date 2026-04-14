@@ -1,78 +1,64 @@
-import { m } from "$paraglide/messages.js";
 import { Flex, Spinner } from "@chakra-ui/react";
-import { useLiveInfiniteQuery, useLiveQuery } from "@tanstack/react-db";
-import { getRouteApi, useRouter } from "@tanstack/react-router";
-import { LuInbox } from "react-icons/lu";
+import { Suspense } from "react";
 
-import { InboxErrorSection } from "#features/inbox/inbox-error.section.tsx";
-import { ThreadsListboxSkeleton } from "#features/inbox/threads-listbox-skeleton.tsx";
-import { ThreadsListbox } from "#features/inbox/threads-listbox.tsx";
-import { inboxThreadsLiveQuery } from "#infrastructure/collections/inbox-threads-live-query.ts";
-import { pendingJobsCollection } from "#infrastructure/collections/pending-jobs.ts";
-import { queryClient } from "#infrastructure/query-client.ts";
-import { threadKeys } from "#infrastructure/query-keys.ts";
-import { EmptyState } from "#ui/empty-state.tsx";
-
-const inboxRouteApi = getRouteApi("/_authenticated/");
-
-const defaultPageSize = 25;
+import { useInboxThreadListState } from "#features/inbox/hooks/use-inbox-thread-list.ts";
+import {
+  InboxPendingJobsErrorFallback,
+  InboxPendingJobsErrorSink,
+  InboxThreadsEmptyFromPending,
+} from "#features/inbox/inbox-pending-suspense.tsx";
+import { InboxErrorSection } from "#features/inbox/ui/inbox-error.section.tsx";
+import { ThreadsListboxSkeleton } from "#features/inbox/ui/threads-listbox-skeleton.tsx";
+import { ThreadsListbox } from "#features/inbox/ui/threads-listbox.tsx";
+import { ErrorBoundary } from "#ui/error-boundary.tsx";
 
 export function InboxPage() {
-  const router = useRouter();
-  const search = inboxRouteApi.useSearch();
-  const pageSize = search.pageSize ?? defaultPageSize;
-
-  const { data: pendingRows } = useLiveQuery((q) => q.from({ pending: pendingJobsCollection }));
-  const pending = pendingRows?.[0];
-
   const {
-    data: threads,
+    pageSize,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isError,
-    isReady,
-  } = useLiveInfiniteQuery(inboxThreadsLiveQuery, { pageSize }, [pageSize]);
-
-  const listReady = isReady && !isError;
-  const showInboxSetupEmpty =
-    listReady && threads.length === 0 && pending !== undefined && pending.userInboxSyncCount > 0;
+    listReady,
+    threadList,
+    onRetryThreads,
+  } = useInboxThreadListState();
 
   if (isError) {
-    return (
-      <InboxErrorSection
-        onRetry={() => {
-          queryClient.invalidateQueries({ queryKey: threadKeys.all });
-          router.invalidate();
-        }}
-      />
-    );
+    return <InboxErrorSection onRetry={onRetryThreads} />;
   }
 
   return (
     <Flex flex={1} flexDirection="column" height="full" minH={0}>
+      <ErrorBoundary
+        fallbackRender={({ reset }) => <InboxPendingJobsErrorFallback reset={reset} />}
+      >
+        <Suspense fallback={null}>
+          <InboxPendingJobsErrorSink />
+        </Suspense>
+      </ErrorBoundary>
       {!listReady ? (
         <ThreadsListboxSkeleton rowCount={pageSize} />
-      ) : threads.length === 0 ? (
-        showInboxSetupEmpty ? (
-          <EmptyState
-            icon={<Spinner aria-hidden size="lg" />}
-            title={m.home_threads_empty_setup_title()}
-            description={m.home_threads_empty_setup_description()}
-          />
-        ) : (
-          <EmptyState
-            icon={<LuInbox size={28} />}
-            title={m.home_threads_empty_title()}
-            description={m.home_threads_empty_description()}
-          />
-        )
+      ) : threadList.length === 0 ? (
+        <ErrorBoundary
+          fallbackRender={({ reset }) => <InboxPendingJobsErrorFallback reset={reset} />}
+        >
+          <Suspense
+            fallback={
+              <Flex align="center" flex={1} justify="center" minH="40" width="full">
+                <Spinner aria-hidden size="lg" />
+              </Flex>
+            }
+          >
+            <InboxThreadsEmptyFromPending />
+          </Suspense>
+        </ErrorBoundary>
       ) : (
         <ThreadsListbox
           fetchNextPage={fetchNextPage}
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
-          threads={threads}
+          threads={threadList}
         />
       )}
     </Flex>

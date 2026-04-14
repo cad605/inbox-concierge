@@ -1,3 +1,5 @@
+import type { LoadSubsetOptions } from "@tanstack/react-db";
+
 export const authKeys = {
   all: ["auth"] as const,
   me: ["auth", "me"] as const,
@@ -8,8 +10,6 @@ export const labelKeys = {
   all: ["labels"] as const,
   list: ["labels", "list"] as const,
 };
-
-import type { LoadSubsetOptions } from "@tanstack/db";
 
 const defaultThreadListLimit = 100;
 
