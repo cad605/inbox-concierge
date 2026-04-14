@@ -298,8 +298,15 @@
                 "message": "Use # path alias instead of relative imports"
               },
               {
-                "group": ["#*/**", "!#ui/**", "!#lib/**", "!#domain/**"],
-                "message": "UI components must be purely presentational - can only import from #ui/, #lib/, #domain/, $paraglide, or external libraries"
+                "group": [
+                  "#*/**",
+                  "!#ui/**",
+                  "!#lib/**",
+                  "!#domain/**",
+                  "!#features/**/ui/**",
+                  "!#features/**/domain/**"
+                ],
+                "message": "UI components must be purely presentational - can only import from #ui/, #lib/, #domain/, feature-scoped #features/*/ui/ siblings, feature-scoped #features/*/domain/, $paraglide, or external libraries"
               }
             ]
           }
@@ -357,11 +364,12 @@
                   "!#features/**/domain/**",
                   "!#adapters/**",
                   "!#features/**/adapters/**",
-                  "!#infrastructure/**",
+                  "!#features/**/hooks/**",
+                  "!#features/**/context.tsx",
                   "!#lib/**",
                   "!#features/**/lib/**"
                 ],
-                "message": "Hooks can only import from #ports/, #domain/, #adapters/, #infrastructure/, #lib/, or external libraries"
+                "message": "Hooks can only import from #ports/, #domain/, #adapters/, #hooks/, #context, #lib/, or external libraries"
               }
             ]
           }
