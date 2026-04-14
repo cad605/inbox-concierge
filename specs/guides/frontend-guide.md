@@ -355,7 +355,7 @@ const router = createRouter({ routeTree }); // WRONG — Router's cache conflict
 
 Use TanStack DB for reactive client-side collections that need live queries or optimistic mutations. This project standardizes on the **Query Collection** adapter (`queryCollectionOptions` from `@tanstack/query-db-collection`): list data through TanStack Query (`queryKey` / `queryFn` → `openapi-fetch`), then persist inserts/updates/deletes in `onInsert` / `onUpdate` / `onDelete` and **`refetch()`** to reconcile with the server.
 
-Collections are **client-side only**. Use **`await collection.preload()`** in the route `loader` and **`useLiveQuery`** in the component (see TanStack DB live-queries guide). Set **`ssr: false`** on routes that use collections so SSR-capable stacks never run `preload()` on the server; on a Vite-only SPA, loaders already run in the browser.
+Collections are **client-side only**. Use **`await collection.preload()`** in the route `loader`, then **`useLiveSuspenseQuery`** inside **`Suspense`** and **`ErrorBoundary`** in the component (see TanStack DB React docs). Set **`ssr: false`** on routes that use collections so SSR-capable stacks never run `preload()` on the server; on a Vite-only SPA, loaders already run in the browser.
 
 **Shared `QueryClient`:** Import the app singleton from `#infrastructure/query-client.ts` into every collection module. Do **not** instantiate a second `QueryClient` inside collection files.
 
@@ -407,10 +407,12 @@ export const itemCollection = createCollection(
 
 ```tsx
 // src/routes/_authenticated/items.tsx
-import { useLiveQuery } from "@tanstack/react-db";
+import { useLiveSuspenseQuery } from "@tanstack/react-db";
 import { createFileRoute } from "@tanstack/react-router";
+import { Suspense } from "react";
 
 import { itemCollection } from "#infrastructure/collections/example.ts";
+import { ErrorBoundary } from "#ui/error-boundary.tsx";
 
 export const Route = createFileRoute("/_authenticated/items")({
   component: ItemsPage,
@@ -421,13 +423,21 @@ export const Route = createFileRoute("/_authenticated/items")({
 });
 
 function ItemsPage() {
-  const { data: items, isLoading } = useLiveQuery((q) => q.from({ item: itemCollection }));
+  return (
+    <ErrorBoundary fallbackRender={({ reset }) => <div>Failed to load</div>}>
+      <Suspense fallback={<Skeleton />}>
+        <ItemsList />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
 
-  if (isLoading) return <Skeleton />;
+function ItemsList() {
+  const { data: items } = useLiveSuspenseQuery((q) => q.from({ item: itemCollection }), []);
 
   return (
     <ul>
-      {items?.map((item) => (
+      {items.map((item) => (
         <li key={item.id}>{item.name}</li>
       ))}
     </ul>
@@ -435,7 +445,7 @@ function ItemsPage() {
 }
 ```
 
-For filters and `orderBy`, use the query builder APIs from `@tanstack/react-db` / `@tanstack/db` (see `.repos/tanstack-db/docs/guides/live-queries.md`).
+For filters and `orderBy`, use the query builder APIs from `@tanstack/react-db` (see `.repos/tanstack-db/docs/guides/live-queries.md`).
 
 ### Optimistic Mutations
 
@@ -460,11 +470,26 @@ todoCollection.delete(todo.id);
 Include all external reactive values used in query closures:
 
 ```tsx
-const { data } = useLiveQuery(
+const { data } = useLiveSuspenseQuery(
   (q) => q.from({ todo: todoCollection }).where(({ todo }) => eq(todo.userId, userId)),
   [userId],
 );
 ```
+
+For queries with **no external dependencies**, pass an explicit **empty dependency array** `[]` so it is obvious the live query is static (same guidance as TanStack DB React docs).
+
+### Loading and errors (`useLiveSuspenseQuery` vs `useLiveQuery`)
+
+**Default:** use **`useLiveSuspenseQuery`** with **`Suspense`** (Chakra skeleton or spinner fallback) and **`ErrorBoundary`** (see [`packages/web/src/ui/error-boundary.tsx`](packages/web/src/ui/error-boundary.tsx)) so first-load loading and errors match TanStack DB React guidance. Retries call **`collection.utils.refetch()`** (and **`reset()`** on the boundary when applicable).
+
+**Exceptions:**
+
+- **`useLiveInfiniteQuery`** for paginated live lists (inbox threads) until the library provides a suspense infinite API.
+- **`useLiveQuery`** when a query must be **disabled** (`undefined` / `null` callback) or you need **`isEnabled`** — `useLiveSuspenseQuery` does not support disabled queries.
+
+### Package: `@tanstack/react-db` only
+
+In `packages/web`, declare **`@tanstack/react-db`** as the direct TanStack DB dependency. It re-exports **`@tanstack/db`**, so import types and values (for example `LoadSubsetOptions`, `createCollection`, query operators) from **`@tanstack/react-db`** and avoid a second direct **`@tanstack/db`** dependency, which reduces the risk of two physical copies of the library and `instanceof` mismatches.
 
 ---
 
