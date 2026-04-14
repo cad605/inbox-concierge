@@ -7,7 +7,7 @@ import { generateId } from "#lib/uuid.ts";
 import { LabelRepository } from "#ports/label-repository.port.ts";
 import { enqueueInboxSync } from "#use-cases/enqueue-inbox-sync.use-case.ts";
 
-/** Seeds default labels and enqueues a durable inbox sync job (auto-label jobs enqueue after `syncUserThreads`). */
+/** Seeds default labels and enqueues a durable inbox sync job (sync enqueues auto-label jobs only for newly persisted messages). */
 export const initializeNewUser = Effect.fn("initializeNewUser")(function* (userId: AuthUserId) {
   const labelRepo = yield* LabelRepository;
 

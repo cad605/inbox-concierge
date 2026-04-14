@@ -94,7 +94,7 @@ export const syncUserThreads = Effect.fn("syncUserThreads")(
             historyId: item.historyId,
           });
 
-          const messageIds = yield* threadRepo.upsertMessages(
+          const { newMessageIds } = yield* threadRepo.upsertMessages(
             userId,
             thread.id,
             messages.map((msg) => ({
@@ -113,7 +113,7 @@ export const syncUserThreads = Effect.fn("syncUserThreads")(
           );
 
           yield* Effect.forEach(
-            messageIds,
+            newMessageIds,
             (messageId) => queue.offer(AutoLabelJobPayload.makeUnsafe({ userId, messageId })),
             { concurrency: 24 },
           );

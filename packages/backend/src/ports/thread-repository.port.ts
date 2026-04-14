@@ -13,6 +13,11 @@ export type ListInboxThreadsPagination = {
   readonly offset: number;
 };
 
+export type UpsertMessagesResult = {
+  readonly messageIds: ReadonlyArray<MessageId>;
+  readonly newMessageIds: ReadonlyArray<MessageId>;
+};
+
 export class ThreadRepository extends ServiceMap.Service<
   ThreadRepository,
   {
@@ -43,7 +48,7 @@ export class ThreadRepository extends ServiceMap.Service<
         readonly receivedAt: Date;
         readonly externalLabels: ReadonlyArray<string>;
       }>,
-    ) => Effect.Effect<ReadonlyArray<MessageId>, InboxPersistenceError>;
+    ) => Effect.Effect<UpsertMessagesResult, InboxPersistenceError>;
 
     readonly findMessageContentByUserAndMessageId: (
       userId: AuthUserId,

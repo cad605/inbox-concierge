@@ -12,8 +12,11 @@ import { LabelId } from "#domain/models/label.ts";
 import { MessageId } from "#domain/models/message.ts";
 import { Thread, ThreadId } from "#domain/models/thread.ts";
 import { Email } from "#domain/shared/email.ts";
-import type { ListInboxThreadsPagination } from "#ports/thread-repository.port.ts";
-import { ThreadRepository } from "#ports/thread-repository.port.ts";
+import {
+  ThreadRepository,
+  type ListInboxThreadsPagination,
+  type UpsertMessagesResult,
+} from "#ports/thread-repository.port.ts";
 
 /** Messages considered for auto-labeling match threads in this many latest-by-activity rows. */
 const MESSAGE_CONTENT_THREAD_LIMIT = 200;
@@ -139,6 +142,17 @@ const make = Effect.gen(function* () {
     tapLogAndMapError("ThreadRepository.upsertThread", InboxPersistenceError.fromError),
   );
 
+  const MessageExternalIdRow = Schema.Struct({
+    externalId: Schema.String,
+  });
+
+  const findExistingMessageExternalIdsForThread = SqlSchema.findAll({
+    Request: ThreadId,
+    Result: MessageExternalIdRow,
+    execute: (threadId) =>
+      sql`SELECT m.external_id FROM messages m WHERE m.thread_id = ${threadId}`,
+  });
+
   const upsertMessages = Effect.fn("ThreadRepository.upsertMessages")(
     function* (
       userId: AuthUserId,
@@ -157,7 +171,8 @@ const make = Effect.gen(function* () {
         readonly externalLabels: ReadonlyArray<string>;
       }>,
     ) {
-      if (messages.length === 0) return yield* Effect.succeed([]);
+      const empty: UpsertMessagesResult = { messageIds: [], newMessageIds: [] };
+      if (messages.length === 0) return yield* Effect.succeed(empty);
 
       const ownership = yield* sql`
         SELECT 1 AS ok FROM threads WHERE id = ${threadId} AND user_id = ${userId} LIMIT 1
@@ -169,6 +184,9 @@ const make = Effect.gen(function* () {
         });
         return yield* Effect.fail(InboxPersistenceError.fromError());
       }
+
+      const existingRows = yield* findExistingMessageExternalIdsForThread(threadId);
+      const existingExternalIds = new Set(existingRows.map((r) => r.externalId));
 
       const createdAt = new Date();
       const rows = messages.map((msg) => ({
@@ -230,7 +248,14 @@ const make = Effect.gen(function* () {
         orderedIds.push(id);
       }
 
-      return orderedIds;
+      const newMessageIds: Array<MessageId> = [];
+      for (const msg of messages) {
+        if (!existingExternalIds.has(msg.externalId)) {
+          newMessageIds.push(idByExternal.get(msg.externalId)!);
+        }
+      }
+
+      return { messageIds: orderedIds, newMessageIds };
     },
     tapLogAndMapError("ThreadRepository.upsertMessages", InboxPersistenceError.fromError),
   );
