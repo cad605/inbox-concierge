@@ -121,6 +121,7 @@ export const syncUserThreads = Effect.fn("syncUserThreads")(
       { concurrency: 5 },
     );
   },
+  Effect.tapError((error) => Effect.logError(error.message)),
   Effect.catchTags({
     SchemaError: logAndFailWith("syncUserThreads: SchemaError", InboxSyncError.fromError),
     PersistedQueueError: logAndFailWith(

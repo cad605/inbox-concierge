@@ -1,3 +1,4 @@
+import { generatePkce } from "@workspace/google-oauth-client";
 import { Effect } from "effect";
 
 import { AuthProvider } from "#ports/auth-provider.port.ts";
@@ -15,7 +16,14 @@ export const getAuthorizationUrl = Effect.fn("getAuthorizationUrl")(function* ()
   const authProvider = yield* AuthProvider;
 
   const state = generateState();
-  const redirectUrl = authProvider.getAuthorizationUrl(state);
+  const { codeVerifier, codeChallenge } = yield* generatePkce();
+  const redirectUrl = yield* authProvider.getAuthorizationUrl({
+    state,
+    accessType: "offline",
+    prompt: "select_account",
+    codeChallenge,
+    includeGrantedScopes: true,
+  });
 
-  return { redirectUrl, state };
+  return { redirectUrl, state, codeVerifier };
 });

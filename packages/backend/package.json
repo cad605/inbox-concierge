@@ -18,6 +18,8 @@
     "@effect/ai-openrouter": "4.0.0-beta.43",
     "@effect/platform-bun": "catalog:",
     "@effect/sql-pg": "4.0.0-beta.43",
+    "@workspace/gmail-client": "workspace:*",
+    "@workspace/google-oauth-client": "workspace:*",
     "effect": "catalog:",
     "pg": "8.20.0"
   },

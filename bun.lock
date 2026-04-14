@@ -17,6 +17,8 @@
         "@effect/ai-openrouter": "4.0.0-beta.43",
         "@effect/platform-bun": "catalog:",
         "@effect/sql-pg": "4.0.0-beta.43",
+        "@workspace/gmail-client": "workspace:*",
+        "@workspace/google-oauth-client": "workspace:*",
         "effect": "catalog:",
         "pg": "8.20.0",
       },
@@ -24,6 +26,35 @@
         "@effect/vitest": "catalog:",
         "@types/bun": "catalog:",
         "@types/pg": "8.20.0",
+        "@workspace/tsconfig": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+    },
+    "packages/gmail-client": {
+      "name": "@workspace/gmail-client",
+      "dependencies": {
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@effect/vitest": "catalog:",
+        "@types/bun": "catalog:",
+        "@workspace/tsconfig": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+      "peerDependencies": {
+        "effect": "catalog:",
+      },
+    },
+    "packages/google-oauth-client": {
+      "name": "@workspace/google-oauth-client",
+      "dependencies": {
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@effect/vitest": "catalog:",
+        "@types/bun": "catalog:",
         "@workspace/tsconfig": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:",
@@ -53,7 +84,6 @@
         "@chakra-ui/react": "3.34.0",
         "@emotion/react": "11.14.0",
         "@inlang/paraglide-js": "2.15.1",
-        "@tanstack/db": "0.6.2",
         "@tanstack/query-core": "5.96.2",
         "@tanstack/query-db-collection": "1.0.33",
         "@tanstack/react-db": "0.1.80",
@@ -550,6 +580,10 @@
     "@vitest/utils": ["@vitest/utils@4.1.1", "", { "dependencies": { "@vitest/pretty-format": "4.1.1", "convert-source-map": "^2.0.0", "tinyrainbow": "^3.0.3" } }, "sha512-cNxAlaB3sHoCdL6pj6yyUXv9Gry1NHNg0kFTXdvSIZXLHsqKH7chiWOkwJ5s5+d/oMwcoG9T0bKU38JZWKusrQ=="],
 
     "@workspace/backend": ["@workspace/backend@workspace:packages/backend"],
+
+    "@workspace/gmail-client": ["@workspace/gmail-client@workspace:packages/gmail-client"],
+
+    "@workspace/google-oauth-client": ["@workspace/google-oauth-client@workspace:packages/google-oauth-client"],
 
     "@workspace/http": ["@workspace/http@workspace:packages/http"],
 

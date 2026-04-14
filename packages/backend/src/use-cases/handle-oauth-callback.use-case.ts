@@ -67,6 +67,7 @@ const findOrCreateUser = Effect.fn("findOrCreateUser")(function* (authResult: Au
 
 export const handleOAuthCallback = Effect.fn("handleOAuthCallback")(function* (input: {
   readonly code: string;
+  readonly codeVerifier: string;
   readonly userAgent: Option.Option<UserAgent>;
   readonly ipAddress: Option.Option<string>;
 }) {
@@ -75,7 +76,7 @@ export const handleOAuthCallback = Effect.fn("handleOAuthCallback")(function* (i
   const sessionRepo = yield* SessionRepository;
   const oauthTokenRepo = yield* OAuthTokenRepository;
 
-  const authResult = yield* authProvider.handleCallback(input.code);
+  const authResult = yield* authProvider.handleCallback(input.code, input.codeVerifier);
   const { user, identityId, isNewUser } = yield* findOrCreateUser(authResult);
 
   if (Option.isSome(authResult.tokenData)) {

@@ -1,4 +1,5 @@
 import { type Effect, ServiceMap } from "effect";
+import type * as UCH from "effect/unstable/http/HttpClient";
 
 import type { InboxSyncError } from "#domain/errors/inbox-sync-error.ts";
 
@@ -25,17 +26,20 @@ export type InboxThreadDetail = {
   }>;
 };
 
+/** Outbound HTTP dependency for Gmail API calls. */
+export type OutboundHttpClient = typeof UCH.HttpClient;
+
 export class InboxProvider extends ServiceMap.Service<
   InboxProvider,
   {
     readonly listThreads: (input: {
       readonly accessToken: string;
       readonly maxResults: number;
-    }) => Effect.Effect<ReadonlyArray<InboxThreadListItem>, InboxSyncError>;
+    }) => Effect.Effect<ReadonlyArray<InboxThreadListItem>, InboxSyncError, OutboundHttpClient>;
 
     readonly getThread: (input: {
       readonly accessToken: string;
       readonly threadId: string;
-    }) => Effect.Effect<InboxThreadDetail, InboxSyncError>;
+    }) => Effect.Effect<InboxThreadDetail, InboxSyncError, OutboundHttpClient>;
   }
 >()("app/ports/InboxProvider") {}

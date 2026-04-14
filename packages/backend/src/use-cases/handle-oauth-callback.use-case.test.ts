@@ -55,9 +55,10 @@ const existingIdentity = AuthIdentity.makeUnsafe({
 });
 
 const authProviderLayer = Layer.succeed(AuthProvider)({
-  getAuthorizationUrl: () => "",
-  handleCallback: () => Effect.succeed(authResult),
+  getAuthorizationUrl: (_params) => Effect.succeed(""),
+  handleCallback: (_code: string, _codeVerifier: string) => Effect.succeed(authResult),
   refreshAccessToken: () => Effect.die("AuthProvider.refreshAccessToken: not used in tests"),
+  revokeToken: () => Effect.die("AuthProvider.revokeToken: not used in tests"),
 });
 
 const tokenGenLayer = Layer.succeed(GenerateSessionToken)({
@@ -88,6 +89,7 @@ const sessionRepoLayer = Layer.succeed(SessionRepository)({
 
 const callbackInput = {
   code: "auth-code",
+  codeVerifier: "test-pkce-verifier",
   userAgent: Option.none(),
   ipAddress: Option.none(),
 } as const;

@@ -8,7 +8,10 @@ import { isOAuthStateError } from "#domain/errors/oauth-state-error.ts";
 import { isProviderAuthFailedError } from "#domain/errors/provider-auth-failed-error.ts";
 import { UserAgent } from "#domain/shared/user-agent.ts";
 import type { GoogleOAuthCallbackQuery } from "#entrypoints/http/groups/auth/auth-api.ts";
-import { OAUTH_STATE_COOKIE_NAME } from "#entrypoints/http/groups/auth/oauth-state.ts";
+import {
+  OAUTH_PKCE_VERIFIER_COOKIE_NAME,
+  OAUTH_STATE_COOKIE_NAME,
+} from "#entrypoints/http/groups/auth/oauth-state.ts";
 import { sessionCookieSecurity } from "#entrypoints/http/groups/auth/session-cookie.ts";
 import { HttpConfig } from "#entrypoints/http/http.config.ts";
 import { getCookieValue } from "#lib/get-cookie-value.ts";
@@ -64,10 +67,23 @@ export const callbackGoogleHandler = ({
     );
 
     const storedState = getCookieValue(request.headers, OAUTH_STATE_COOKIE_NAME);
+    const codeVerifier = getCookieValue(request.headers, OAUTH_PKCE_VERIFIER_COOKIE_NAME);
 
     yield* HttpEffect.appendPreResponseHandler((_req, response) =>
       Effect.succeed(
         HttpServerResponse.setCookieUnsafe(response, OAUTH_STATE_COOKIE_NAME, "", {
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax",
+          path: "/",
+          maxAge: Duration.seconds(0),
+        }),
+      ),
+    );
+
+    yield* HttpEffect.appendPreResponseHandler((_req, response) =>
+      Effect.succeed(
+        HttpServerResponse.setCookieUnsafe(response, OAUTH_PKCE_VERIFIER_COOKIE_NAME, "", {
           httpOnly: true,
           secure: true,
           sameSite: "lax",
@@ -91,10 +107,15 @@ export const callbackGoogleHandler = ({
     const ua = headerString(request.headers, "user-agent");
     const userAgent = ua != null ? Option.some(UserAgent.makeUnsafe(ua)) : Option.none<UserAgent>();
 
+    if (codeVerifier == null) {
+      return redirectSignInWithError(webAppUrl, "oauth_state");
+    }
+
     return yield* Effect.matchEffect(
       Effect.gen(function* () {
         const { user, session, isNewUser } = yield* handleOAuthCallback({
           code: query.code,
+          codeVerifier,
           userAgent,
           ipAddress: request.remoteAddress ?? Option.none(),
         });

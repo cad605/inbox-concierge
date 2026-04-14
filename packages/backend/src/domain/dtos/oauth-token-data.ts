@@ -6,4 +6,6 @@ export class OAuthTokenData extends Schema.Class<OAuthTokenData>("OAuthTokenData
   expiresIn: Schema.Number,
   tokenType: Schema.String,
   scopes: Schema.String,
+  /** Seconds until refresh token expires when Google returns time-based access (optional). */
+  refreshTokenExpiresIn: Schema.Option(Schema.Number),
 }) {}

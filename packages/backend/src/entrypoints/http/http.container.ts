@@ -16,6 +16,8 @@ import { ThreadHandlers } from "#entrypoints/http/groups/threads/thread.group.ts
 import { HttpConfig } from "#entrypoints/http/http.config.ts";
 import { CorsMiddlewareLive } from "#entrypoints/http/middleware/cors.middleware.ts";
 import { DatabaseLive } from "#infrastructure/database/client.ts";
+import { GmailClientLive } from "#infrastructure/gmail.ts";
+import { GoogleOAuthLive } from "#infrastructure/google-oauth.ts";
 import { type LoggerConfig, makeLoggerLayer } from "#infrastructure/logger.ts";
 
 export { CorsMiddlewareLive };
@@ -55,6 +57,8 @@ export const withInfrastructure = <A, E, R>(layer: Layer.Layer<A, E, R>, openRou
     Layer.provide(QueueFactoryLive),
     Layer.provide(TokenEncryptionLive),
     Layer.provide(DatabaseLive),
+    Layer.provide(GoogleOAuthLive),
+    Layer.provide(GmailClientLive),
     Layer.provide(LoggerLayerLive),
     Layer.provide(FetchHttpClient.layer),
   );

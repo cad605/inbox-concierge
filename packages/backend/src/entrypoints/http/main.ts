@@ -1,5 +1,6 @@
 import { BunHttpServer, BunRuntime } from "@effect/platform-bun";
-import { ConfigProvider, Effect, Layer } from "effect";
+import type { Effect } from "effect";
+import { ConfigProvider, Effect as Eff, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 
 import { AdaptersLive } from "#adapters/layers.ts";
@@ -10,7 +11,7 @@ import { requestIdMiddleware } from "#entrypoints/http/middleware/request-id.mid
 import { AutoLabelWorkerLive } from "#entrypoints/worker/auto-label-worker.ts";
 import { InboxSyncWorkerLive } from "#entrypoints/worker/inbox-sync-worker.ts";
 
-const program = Effect.gen(function* () {
+const program = Eff.gen(function* () {
   const cfg = yield* config;
   const ServerLive = BunHttpServer.layer({
     port: cfg.port,
@@ -29,6 +30,6 @@ const program = Effect.gen(function* () {
   );
 
   yield* Layer.launch(App);
-}).pipe(Effect.provideService(ConfigProvider.ConfigProvider, ConfigProvider.fromEnv()));
+}).pipe(Eff.provideService(ConfigProvider.ConfigProvider, ConfigProvider.fromEnv()));
 
-BunRuntime.runMain(program);
+BunRuntime.runMain(program as Effect.Effect<void, unknown, never>);
