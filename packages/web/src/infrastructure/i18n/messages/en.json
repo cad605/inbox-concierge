@@ -51,7 +51,6 @@
   "home_threads_error": "Could not load threads.",
   "home_threads_retry": "Retry",
   "home_threads_sync": "Sync inbox",
-  "home_threads_sync_loading": "Syncing…",
   "home_threads_sync_aria_busy": "Syncing inbox, please wait",
   "home_threads_empty_title": "No threads yet",
   "home_threads_empty_description": "Your inbox has no threads to show yet. Try syncing from the app or check back after new mail arrives.",

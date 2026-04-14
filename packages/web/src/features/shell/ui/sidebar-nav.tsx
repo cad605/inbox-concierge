@@ -69,8 +69,6 @@ export function SidebarNav({
           aria-label={syncAriaLabel}
           disabled={isSyncing || hasPendingBackgroundJobs}
           flex={1}
-          loading={isSyncing}
-          loadingText={m.home_threads_sync_loading()}
           minW={0}
           onClick={() => onSyncInbox()}
           size="sm"
@@ -83,7 +81,7 @@ export function SidebarNav({
           </Box>
         </Button>
 
-        {hasPendingBackgroundJobs ? (
+        {isSyncing || hasPendingBackgroundJobs ? (
           <Tooltip content={m.nav_pending_jobs_indicator()} showArrow>
             <Box
               alignItems="center"
